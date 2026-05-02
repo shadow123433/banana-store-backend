@@ -15,6 +15,7 @@ Este repositório contém o **backend** da aplicação **Banana Store**, respons
 * JWT (JSON Web Token)
 * Cors
 * Dotenv
+* Bcrypt
 
 ---
 
@@ -124,6 +125,6 @@ Este projeto ainda está em evolução, podendo sofrer alterações na estrutura
 
 ## 👨‍💻 Autor
 
-Desenvolvido por **Gustavo Martins**
+Desenvolvido por **Thiago Martins**
 
 ---

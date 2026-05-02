@@ -46,7 +46,7 @@ Backend/
 
 Este backend se conecta com o frontend da aplicação:
 
-👉 Substitua pelo link do frontend:
+👉link do frontend:
 `https://github.com/shadow123433/banana-store-frontend.git`
 
 ---

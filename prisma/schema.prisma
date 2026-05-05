@@ -12,17 +12,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// OS MODELOS FICAM FORA DO BLOCO ACIMA:
+// Modelos:
 
 model Pedido {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  itens     String   
-  createdAt DateTime @default(now())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  item        String
+  quantidade  Int
+  nome        String
+  endereco    String
+  cidade      String
+  bairro      String
+  complemento String?
+  telefone    String
+  uf          String
+  createdAt   DateTime @default(now())
+
+  // --- A CONEXÃO ---
+  usuarioId   String   @db.ObjectId // Guarda o ID do dono do pedido
+  usuario     User     @relation(fields: [usuarioId], references: [id])
 }
 
 model User {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  nome  String
-  email String @unique
-  senha String
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  nome    String
+  email   String   @unique
+  senha   String
+  
+  // --- A CONEXÃO ---
+  pedidos Pedido[] // Um usuário pode ver sua lista de pedidos
 }

@@ -3,29 +3,45 @@ const prisma = new PrismaClient()
 
 const controllers = {
     createPedido: async (req, res) => {
-        const { itens } = req.body;
+        const { item, quantidade, entrega } = req.body;
 
-        console.log('Pedido recebido:', { itens });
+        console.log('Dados recebidos:', { item, quantidade, entrega });
 
-        if (!itens) {
-            return res.status(400).json({ error: 'O campo itens é obrigatório' });
+        // O usuarioId vem do seu authMiddleware (req.usuarioId = decoded.id)
+        const userId = req.usuarioId; 
+
+        if (!item || !quantidade || !entrega) {
+            return res.status(400).json({ error: 'Dados incompletos' });
         }
 
         try {
-            // AQUI O PRISMA SALVA NO MONGO
             const novoPedido = await prisma.pedido.create({
                 data: {
-                    itens: itens
+                    item: item,
+                    quantidade: parseInt(quantidade),
+                    nome: entrega.nome,
+                    endereco: entrega.endereco,
+                    cidade: entrega.cidade,
+                    bairro: entrega.bairro,
+                    complemento: entrega.complemento || "",
+                    telefone: entrega.telefone,
+                    uf: entrega.uf,
+                    
+                    // --- OBRIGATÓRIO PARA O SEU SCHEMA ---
+                    // Conecta o pedido ao usuário logado
+                    usuario: {
+                        connect: { id: userId }
+                    }
                 }
             });
 
             res.status(201).json({
-                message: 'Pedido criado no banco com sucesso!',
+                message: 'Pedido criado com sucesso!',
                 pedido: novoPedido
             });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Erro ao salvar no banco de dados' });
+            console.error("Erro Prisma:", error);
+            res.status(500).json({ error: 'Erro ao salvar no banco' });
         }
     }
 }

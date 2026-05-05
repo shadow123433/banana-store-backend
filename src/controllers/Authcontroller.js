@@ -1,5 +1,8 @@
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt'; // Importante instalar: npm install bcrypt
+dotenv.config();
 
 const prisma = new PrismaClient();
 
@@ -61,17 +64,50 @@ const controllers = {
                 return res.status(401).json({ message: "E-mail ou senha incorretos!" });
             }
 
-            // 3. Sucesso!
+         // --- AQUI É ONDE O MIDDLEWARE NASCE ---
+            // Criamos o token usando o ID do usuário e a chave secreta do seu .env
+            const token = jwt.sign(
+                { id: usuario.id }, 
+                process.env.JWT_SECRET, 
+                { expiresIn: '1d' } // Token expira em 1 dia
+            );
+
             return res.status(200).json({ 
                 message: "Login realizado com sucesso!",
-                user: { id: usuario.id, nome: usuario.nome }
+                user: { id: usuario.id, nome: usuario.nome },
+                token: token // <--- IMPORTANTE: Enviar o token para o frontend
             });
 
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: "Erro no servidor" });
         }
+    },
+
+
+// --- BUSCAR PEDIDOS DO USUÁRIO LOGADO ---
+    getMeusPedidos: async (req, res) => {
+        try {
+            // O authMiddleware já conferiu o token e nos deu esse ID:
+            const userId = req.usuarioId;
+
+            const pedidos = await prisma.pedido.findMany({
+                where: {
+                    usuarioId: userId // Busca apenas os pedidos desse cara
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+
+            return res.status(200).json(pedidos);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Erro ao buscar pedidos' });
+        }
     }
+
 };
+
 
 export default controllers;

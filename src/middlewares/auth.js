@@ -6,8 +6,10 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config(); // Carrega as variáveis do arquivo .env
 
 export const authMiddleware = (req, res, next) => {
-    // 1. Pegamos o "convite" que vem no cabeçalho da requisição
     const authHeader = req.headers.authorization;
+
+    console.log('--- Nova Requisição ---');
+    console.log('Header Authorization:', authHeader);
     
 
     // Se o segurança não vir nenhum convite, ele já barra aqui
@@ -15,7 +17,7 @@ export const authMiddleware = (req, res, next) => {
         return res.status(401).json({ error: 'Token não fornecido.' });
     }
 
-    // 2. O padrão do token é "Bearer <token>". Precisamos separar o texto do código.
+    // O padrão do token é "Bearer <token>". Preciso separar o texto do código.
     const parts = authHeader.split(' '); // Divide o texto onde tem espaço
 
     if (parts.length !== 2) {
@@ -29,7 +31,6 @@ export const authMiddleware = (req, res, next) => {
         return res.status(401).json({ error: 'Token malformado.' });
     }
 
-    // 4. A HORA DA VERDADE: Vamos conferir a assinatura do token
     // Usamos o process.env.JWT_SECRET para pegar a chave escondida
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {

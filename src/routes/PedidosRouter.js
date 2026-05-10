@@ -7,5 +7,8 @@ const router = Router();
 
 // 2. Agora o 'authMiddleware' não é mais um nome vazio, o Node sabe o que ele faz
 router.post('/', authMiddleware, controllers.createPedido);
+router.get('/MeusPedidos', authMiddleware, controllers.getMeusPedidos);
+router.patch('/:id/cancelar', authMiddleware, controllers.cancelarPedido);
+
 
 export default router;

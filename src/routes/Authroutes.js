@@ -7,6 +7,5 @@ const router = Router();
 
 router.post('/Register', controllers.cadastro);
 router.post('/Login', controllers.login);
-router.get('/MeusPedidos', authMiddleware, controllers.getMeusPedidos);
 
 export default router;

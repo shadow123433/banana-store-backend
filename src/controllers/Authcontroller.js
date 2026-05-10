@@ -69,7 +69,7 @@ const controllers = {
             const token = jwt.sign(
                 { id: usuario.id }, 
                 process.env.JWT_SECRET, 
-                { expiresIn: '1d' } // Token expira em 1 dia
+                { expiresIn: '7d' } // Token expira em 7 dias
             );
 
             return res.status(200).json({ 
@@ -84,28 +84,6 @@ const controllers = {
         }
     },
 
-
-// --- BUSCAR PEDIDOS DO USUÁRIO LOGADO ---
-    getMeusPedidos: async (req, res) => {
-        try {
-            // O authMiddleware já conferiu o token e nos deu esse ID:
-            const userId = req.usuarioId;
-
-            const pedidos = await prisma.pedido.findMany({
-                where: {
-                    usuarioId: userId // Busca apenas os pedidos desse cara
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            });
-
-            return res.status(200).json(pedidos);
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Erro ao buscar pedidos' });
-        }
-    }
 
 };
 

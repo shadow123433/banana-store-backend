@@ -20,11 +20,13 @@ model Pedido {
   quantidade  Int
   nome        String
   endereco    String
+  numeroCasa  String
   cidade      String
   bairro      String
   complemento String?
   telefone    String
   uf          String
+  status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
 
   // --- A CONEXÃO ---

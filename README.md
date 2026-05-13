@@ -1,130 +1,210 @@
-# 🍌 Banana Store - Backend
+# 🚀 API de Pedidos com Autenticação JWT
 
-Este repositório contém o **backend** da aplicação **Banana Store**, responsável pela API REST, autenticação de usuários e gerenciamento de dados.
-
-> ⚠️ **Status:** Projeto em desenvolvimento.
+API REST desenvolvida com **Node.js**, **Express** e **Prisma ORM**, com autenticação baseada em **JWT**, permitindo cadastro de usuários e gerenciamento de pedidos.
 
 ---
 
-## 🧠 Tecnologias Utilizadas
+## 🧠 Objetivo
 
-* Node.js
-* Express
-* Prisma ORM
-* MongoDB
-* JWT (JSON Web Token)
-* Cors
-* Dotenv
-* Bcrypt
+Construir uma API completa com autenticação segura e controle de dados por usuário, simulando um sistema real de pedidos com isolamento de acesso.
 
 ---
 
-## 📁 Estrutura de Pastas
+## 🛠️ Tecnologias
 
-```bash
-Backend/
-├── node_modules/
-├── prisma/
-│   └── schema.prisma
-├── src/
-│   ├── controllers/
-│   │   ├── Authcontroller.js
-│   │   └── PedidosControllers.js
-│   ├── routes/
-│   │   ├── Authroutes.js
-│   │   └── PedidosRouter.js
-├── .env
-├── .gitignore
-├── package.json
-├── package-lock.json
-└── server.js
+- Node.js  
+- Express  
+- Prisma ORM  
+- MongoDB  
+- JSON Web Token (JWT)  
+- Bcrypt  
+
+---
+
+## 📦 Modelagem do Banco
+
+### 👤 Usuário
+- id  
+- nome  
+- email (único)  
+- senha (criptografada)  
+
+### 📦 Pedido
+- id  
+- item  
+- quantidade  
+- dados de entrega  
+- status (`PENDENTE` por padrão)  
+- createdAt  
+- usuarioId  
+
+---
+
+## 🔗 Relacionamento
+
+- Um usuário pode ter vários pedidos  
+- Cada pedido pertence a um único usuário  
+
+---
+
+## 🔐 Autenticação
+
+A API utiliza JWT para proteger rotas.
+
+### Fluxo:
+
+1. Usuário faz login  
+2. Recebe um token JWT  
+3. Envia o token no header das requisições  
+
+### Header obrigatório:
+
+```http
+Authorization: Bearer seu_token_aqui
 ```
 
 ---
 
-## 🔗 Integração com Frontend
+## 📡 Rotas da API
 
-Este backend se conecta com o frontend da aplicação:
+### 🔐 Auth
 
-👉link do frontend:
-`https://github.com/shadow123433/banana-store-frontend.git`
+#### POST `/Auth/cadastro`
+Cria um novo usuário
 
----
-
-## 📌 Rotas Principais
-
-### 🔐 Autenticação (`/Auth`)
-
-* `POST /Auth/Register` – Cria um novo usuário
-* `POST /Auth/Login` – Autentica o usuário e retorna um token JWT
-
-### 📦 Pedidos (`/Pedidos`)
-
-* Rotas para gerenciamento de pedidos (em desenvolvimento)
-
----
-
-## ⚙️ Pré-requisitos
-
-Antes de rodar o projeto, você precisa ter instalado:
-
-* Node.js (v18 ou superior)
-* MongoDB (local ou MongoDB Atlas)
-
----
-
-## 🔐 Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
-
-```env
-DATABASE_URL="sua_string_de_conexao_mongodb"
-JWT_SECRET="sua_chave_secreta"
-PORT=3000
+```json
+{
+  "nome": "Thiago",
+  "email": "thiago@email.com",
+  "senha": "123456"
+}
 ```
 
 ---
 
-## ▶️ Como Rodar o Projeto
+#### POST `/Auth/login`
+Retorna token JWT
 
+```json
+{
+  "email": "thiago@email.com",
+  "senha": "123456"
+}
+```
+
+📥 Resposta:
+
+```json
+{
+  "user": {
+    "id": "123",
+    "nome": "Thiago"
+  },
+  "token": "jwt_token_aqui"
+}
+```
+
+---
+
+### 📦 Pedidos (Protegidas)
+
+#### POST `/Pedidos`
+Cria um pedido
+
+```json
+{
+  "item": "Pizza",
+  "quantidade": 2,
+  "entrega": {
+    "nome": "Thiago",
+    "endereco": "Rua A",
+    "numero": "123",
+    "bairro": "Centro",
+    "cidade": "Linhares",
+    "uf": "ES",
+    "telefone": "999999999"
+  }
+}
+```
+
+---
+
+#### GET `/Pedidos`
+Lista pedidos do usuário logado
+
+---
+
+#### PATCH `/Pedidos/:id/cancelar`
+Cancela um pedido
+
+---
+
+## ⚙️ Como rodar o projeto
+
+### 1. Clonar repositório
 ```bash
-# Instalar dependências
+git clone <seu-repo>
+```
+
+### 2. Instalar dependências
+```bash
 npm install
+```
 
-# rode
+### 3. Criar arquivo `.env`
+```env
+DATABASE_URL="sua_string_mongodb"
+JWT_SECRET="sua_chave_secreta"
+```
+
+### 4. Rodar o servidor
+```bash
 node server.js
 ```
 
----
-
-## 📌 Funcionalidades (em desenvolvimento)
-
-* [x] Cadastro de usuários
-* [ ] Login com autenticação JWT
-* [x] CRUD de pedidos
-* [ ] Middleware de autenticação
-* [ ] Validação de dados
-* [ ] Controle de permissões
+Servidor:
+```
+http://localhost:3000
+```
 
 ---
 
-## 🛠️ Boas Práticas Aplicadas
+## 🧪 Testando a API
 
-* Separação por camadas (controllers, routes)
-* Uso de variáveis de ambiente (.env)
-* Estrutura escalável e modular
-* Organização com Prisma ORM
+Use ferramentas como:
+
+- Postman  
+- Insomnia  
+
+Fluxo recomendado:
+
+1. Criar usuário  
+2. Fazer login  
+3. Copiar token  
+4. Testar rotas de pedidos  
+
+---
+
+## 🧠 Arquitetura
+
+- Controllers → lógica da aplicação  
+- Routes → definição das rotas  
+- Middleware → autenticação JWT  
+- Prisma → acesso ao banco  
 
 ---
 
-## 📄 Observações
+## 📌 Melhorias Futuras
 
-Este projeto ainda está em evolução, podendo sofrer alterações na estrutura, rotas e regras de negócio.
+- Implementar ENUM para status  
+- Adicionar `updatedAt`  
+- Padronizar rotas (`/api/...`)  
+- Tratamento global de erros  
+- Refresh token  
+- Deploy (Render, Railway, etc.)  
 
 ---
 
-## 👨‍💻 Autor
+## 📄 Licença
 
-Desenvolvido por **Thiago Martins**
-
----
+MIT

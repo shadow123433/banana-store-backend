@@ -143,7 +143,7 @@ Cancela um pedido
 
 ### 1. Clonar repositório
 ```bash
-git clone <seu-repo>
+git clone https://github.com/shadow123433/banana-store-backend.git
 ```
 
 ### 2. Instalar dependências

@@ -2,23 +2,49 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const controllers = {
+
+    // --- CRIAR PEDIDO ---
     createPedido: async (req, res) => {
-        const { item, quantidade, entrega } = req.body;
-
-        console.log('Dados recebidos:', { item, quantidade, entrega });
-
-        // O usuarioId vem do seu authMiddleware (req.usuarioId = decoded.id)
-        const userId = req.usuarioId; 
-
-        if (!item || !quantidade || !entrega) {
-            return res.status(400).json({ error: 'Dados incompletos' });
-        }
-
         try {
+            const { item, quantidade, entrega } = req.body;
+            const userId = req.usuarioId;
+
+            console.log('USER ID:', userId);
+            console.log('BODY:', req.body);
+
+            // 🔐 valida autenticação
+            if (!userId) {
+                return res.status(401).json({ error: 'Usuário não autenticado' });
+            }
+
+            // 📦 valida dados básicos
+            if (!item || !quantidade || !entrega) {
+                return res.status(400).json({ error: 'Dados incompletos' });
+            }
+
+            // 🔍 valida quantidade
+            const qtd = parseInt(quantidade);
+            if (isNaN(qtd) || qtd <= 0) {
+                return res.status(400).json({ error: 'Quantidade inválida' });
+            }
+
+            // 🔍 valida entrega (sem exagero, mas segura)
+            if (
+                !entrega.nome ||
+                !entrega.endereco ||
+                !entrega.numero ||
+                !entrega.cidade ||
+                !entrega.bairro ||
+                !entrega.telefone ||
+                !entrega.uf
+            ) {
+                return res.status(400).json({ error: 'Dados de entrega inválidos' });
+            }
+
             const novoPedido = await prisma.pedido.create({
                 data: {
-                    item: item,
-                    quantidade: parseInt(quantidade),
+                    item,
+                    quantidade: qtd,
                     nome: entrega.nome,
                     endereco: entrega.endereco,
                     numeroCasa: entrega.numero,
@@ -27,92 +53,94 @@ const controllers = {
                     complemento: entrega.complemento || "",
                     telefone: entrega.telefone,
                     uf: entrega.uf,
-                    
-    
+
                     usuario: {
                         connect: { id: userId }
                     }
                 }
             });
 
-            res.status(201).json({
+            return res.status(201).json({
                 message: 'Pedido criado com sucesso!',
                 pedido: novoPedido
             });
+
         } catch (error) {
-            console.error("Erro Prisma:", error);
-            res.status(500).json({ error: 'Erro ao salvar no banco' });
+            console.error("Erro createPedido:", error);
+            return res.status(500).json({ error: 'Erro ao salvar no banco' });
         }
     },
 
 
-// --- BUSCAR PEDIDOS DO USUÁRIO LOGADO ---
+    // --- BUSCAR PEDIDOS ---
     getMeusPedidos: async (req, res) => {
         try {
-            // O authMiddleware já conferiu o token e nos deu esse ID:
             const userId = req.usuarioId;
 
+            if (!userId) {
+                return res.status(401).json({ error: 'Usuário não autenticado' });
+            }
+
             const pedidos = await prisma.pedido.findMany({
-                where: {
-                    usuarioId: userId // Busca apenas os pedidos desse cara
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
+                where: { usuarioId: userId },
+                orderBy: { createdAt: 'desc' }
             });
 
             return res.status(200).json(pedidos);
+
         } catch (error) {
-            console.error(error);
+            console.error("Erro getMeusPedidos:", error);
             return res.status(500).json({ error: 'Erro ao buscar pedidos' });
         }
     },
 
 
-cancelarPedido: async (req, res) => {
-    const id = req.params.id;
-    const userId = req.usuarioId;
+    // --- CANCELAR PEDIDO ---
+    cancelarPedido: async (req, res) => {
+        try {
+            const userId = req.usuarioId;
 
-    try {
-        const pedido = await prisma.pedido.findFirst({
-            where: {
-                id,
-                usuarioId: userId
+            if (!userId) {
+                return res.status(401).json({ error: 'Usuário não autenticado' });
             }
-        });
 
-        if (!pedido) {
-            return res.status(404).json({
-                error: 'Pedido não encontrado ou não pertence a você'
+            // ⚠️ NÃO força parseInt sem saber o tipo do banco
+            const id = req.params.id;
+
+            const pedido = await prisma.pedido.findFirst({
+                where: {
+                    id: id,
+                    usuarioId: userId
+                }
             });
-        }
 
-        // Evita cancelar duas vezes (opcional, mas melhor)
-        if (pedido.status === 'CANCELADO') {
-            return res.status(400).json({
-                error: 'Pedido já está cancelado'
-            });
-        }
-
-        const atualizado = await prisma.pedido.update({
-            where: { id },
-            data: {
-                status: 'CANCELADO'
+            if (!pedido) {
+                return res.status(404).json({
+                    error: 'Pedido não encontrado ou não pertence a você'
+                });
             }
-        });
 
-        return res.json({
-            message: 'Pedido cancelado com sucesso',
-            pedido: atualizado
-        });
+            if (pedido.status === 'CANCELADO') {
+                return res.status(400).json({
+                    error: 'Pedido já está cancelado'
+                });
+            }
 
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Erro ao cancelar pedido' });
+            const atualizado = await prisma.pedido.update({
+                where: { id: id },
+                data: { status: 'CANCELADO' }
+            });
+
+            return res.json({
+                message: 'Pedido cancelado com sucesso',
+                pedido: atualizado
+            });
+
+        } catch (error) {
+            console.error("Erro cancelarPedido:", error);
+            return res.status(500).json({ error: 'Erro ao cancelar pedido' });
+        }
     }
-}
-
-
 
 }
 

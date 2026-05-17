@@ -11,7 +11,7 @@ const controllers = {
     cadastro: async (req, res) => {
         const { nome, email, senha } = req.body;
         console.log('Cadastro recebido:', { nome, email });
-        
+
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
         }
@@ -29,9 +29,20 @@ const controllers = {
                 }
             });
 
+            const token = jwt.sign(
+                { id: novoUsuario.id },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
             return res.status(201).json({
                 message: 'Usuário cadastrado com sucesso',
-                user: { id: novoUsuario.id, nome: novoUsuario.nome, email: novoUsuario.email }
+                user: {
+                    id: novoUsuario.id,
+                    nome: novoUsuario.nome,
+                    email: novoUsuario.email
+                },
+                token
             });
 
         } catch (error) {
@@ -64,15 +75,15 @@ const controllers = {
                 return res.status(401).json({ message: "E-mail ou senha incorretos!" });
             }
 
-         // --- AQUI É ONDE O MIDDLEWARE NASCE ---
+            // --- AQUI É ONDE O MIDDLEWARE NASCE ---
             // Criamos o token usando o ID do usuário e a chave secreta do seu .env
             const token = jwt.sign(
-                { id: usuario.id }, 
-                process.env.JWT_SECRET, 
+                { id: usuario.id },
+                process.env.JWT_SECRET,
                 { expiresIn: '7d' } // Token expira em 7 dias
             );
 
-            return res.status(200).json({ 
+            return res.status(200).json({
                 message: "Login realizado com sucesso!",
                 user: { id: usuario.id, nome: usuario.nome },
                 token: token // <--- IMPORTANTE: Enviar o token para o frontend

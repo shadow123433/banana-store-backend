@@ -1,210 +1,188 @@
-# 🚀 API de Pedidos com Autenticação JWT
+# 🚀 Sistema de Pedidos - Backend API
 
-API REST desenvolvida com **Node.js**, **Express** e **Prisma ORM**, com autenticação baseada em **JWT**, permitindo cadastro de usuários e gerenciamento de pedidos.
+API REST desenvolvida em **Node.js** com **Express** e **Prisma ORM**, utilizando **MongoDB** como banco de dados.
 
----
-
-## 🧠 Objetivo
-
-Construir uma API completa com autenticação segura e controle de dados por usuário, simulando um sistema real de pedidos com isolamento de acesso.
+Responsável por autenticação de usuários e gerenciamento completo de pedidos, com segurança baseada em **JWT**.
 
 ---
 
-## 🛠️ Tecnologias
+## 🌐 API em Produção
 
-- Node.js  
-- Express  
-- Prisma ORM  
-- MongoDB  
-- JSON Web Token (JWT)  
-- Bcrypt  
+👉 https://api-pedidos-uu8x.onrender.com
 
 ---
 
-## 📦 Modelagem do Banco
+## 🧠 Visão Geral
 
-### 👤 Usuário
-- id  
-- nome  
-- email (único)  
-- senha (criptografada)  
+Este backend faz parte de uma arquitetura **full stack desacoplada**, onde:
 
-### 📦 Pedido
-- id  
-- item  
-- quantidade  
-- dados de entrega  
-- status (`PENDENTE` por padrão)  
-- createdAt  
-- usuarioId  
+- 🔹 Backend: Node.js + Express (Render)
+- 🔹 Frontend: React (Vercel)
+- 🔹 Banco de Dados: MongoDB
+
+A API fornece endpoints seguros para autenticação e operações de pedidos.
 
 ---
 
-## 🔗 Relacionamento
+## ⚙️ Funcionalidades
 
-- Um usuário pode ter vários pedidos  
-- Cada pedido pertence a um único usuário  
+- ✔️ Cadastro de usuários  
+- ✔️ Login com autenticação JWT  
+- ✔️ Criação de pedidos  
+- ✔️ Listagem de pedidos por usuário  
+- ✔️ Cancelamento de pedidos  
+- ✔️ Associação de pedidos com usuário autenticado  
 
 ---
 
 ## 🔐 Autenticação
 
-A API utiliza JWT para proteger rotas.
-
-### Fluxo:
-
-1. Usuário faz login  
-2. Recebe um token JWT  
-3. Envia o token no header das requisições  
-
-### Header obrigatório:
+- Utiliza **JWT (JSON Web Token)**
+- Token gerado no login
+- Rotas protegidas exigem envio do token no header:
 
 ```http
-Authorization: Bearer seu_token_aqui
+Authorization: Bearer <token>
+```
+
+- Middleware valida e identifica o usuário autenticado
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Node.js**
+- **Express**
+- **Prisma ORM**
+- **MongoDB**
+- **JWT (jsonwebtoken)**
+- **bcrypt**
+- **dotenv**
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+ ├── controllers/     # Regras de negócio
+ │   ├── Authcontroller.js
+ │   └── PedidosController.js
+ ├── routes/          # Rotas da aplicação
+ │   ├── Authroutes.js
+ │   └── PedidosRouter.js
+ ├── middlewares/
+ │   └── auth.js      # Proteção de rotas
+ └── prisma/
+     └── schema.prisma
+     
+server.js
 ```
 
 ---
 
-## 📡 Rotas da API
+## 🗄️ Modelagem do Banco
 
-### 🔐 Auth
+### User
+- id
+- nome
+- email (único)
+- senha
+- pedidos (relação)
 
-#### POST `/Auth/cadastro`
-Cria um novo usuário
+### Pedido
+- id
+- item
+- quantidade
+- dados de entrega
+- status
+- usuário associado
 
-```json
-{
-  "nome": "Thiago",
-  "email": "thiago@email.com",
-  "senha": "123456"
-}
+---
+
+## 📡 Principais Rotas
+
+### 🔹 Autenticação
+
+```http
+POST /Auth/Register
+POST /Auth/Login
 ```
 
 ---
 
-#### POST `/Auth/login`
-Retorna token JWT
+### 🔹 Pedidos (protegidas)
 
-```json
-{
-  "email": "thiago@email.com",
-  "senha": "123456"
-}
-```
-
-📥 Resposta:
-
-```json
-{
-  "user": {
-    "id": "123",
-    "nome": "Thiago"
-  },
-  "token": "jwt_token_aqui"
-}
+```http
+POST /Pedidos           # Criar pedido
+GET /Pedidos           # Listar pedidos do usuário
+PUT /Pedidos/:id       # Cancelar pedido
 ```
 
 ---
 
-### 📦 Pedidos (Protegidas)
+## ⚙️ Como rodar localmente
 
-#### POST `/Pedidos`
-Cria um pedido
-
-```json
-{
-  "item": "Pizza",
-  "quantidade": 2,
-  "entrega": {
-    "nome": "Thiago",
-    "endereco": "Rua A",
-    "numero": "123",
-    "bairro": "Centro",
-    "cidade": "Linhares",
-    "uf": "ES",
-    "telefone": "999999999"
-  }
-}
-```
-
----
-
-#### GET `/Pedidos`
-Lista pedidos do usuário logado
-
----
-
-#### PATCH `/Pedidos/:id/cancelar`
-Cancela um pedido
-
----
-
-## ⚙️ Como rodar o projeto
-
-### 1. Clonar repositório
 ```bash
 git clone https://github.com/shadow123433/banana-store-backend.git
-```
-
-### 2. Instalar dependências
-```bash
+cd banana-store-backend
 npm install
 ```
 
-### 3. Criar arquivo `.env`
-```env
-DATABASE_URL="sua_string_mongodb"
-JWT_SECRET="sua_chave_secreta"
+---
+
+## 🔐 Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz:
+
+```
+DATABASE_URL=mongodb+srv://...
+JWT_SECRET=sua_chave_secreta
+PORT=3000
 ```
 
-### 4. Rodar o servidor
+---
+
+## ▶️ Executar o servidor
+
 ```bash
 node server.js
 ```
 
-Servidor:
+Servidor disponível em:
+
 ```
 http://localhost:3000
 ```
 
 ---
 
-## 🧪 Testando a API
+## 🌐 Deploy
 
-Use ferramentas como:
+- **Backend:** Render  
+- **Banco:** MongoDB Atlas  
 
-- Postman  
-- Insomnia  
-
-Fluxo recomendado:
-
-1. Criar usuário  
-2. Fazer login  
-3. Copiar token  
-4. Testar rotas de pedidos  
-
----
-
-## 🧠 Arquitetura
-
-- Controllers → lógica da aplicação  
-- Routes → definição das rotas  
-- Middleware → autenticação JWT  
-- Prisma → acesso ao banco  
+👉 API em produção com autenticação e persistência de dados.
 
 ---
 
 ## 📌 Melhorias Futuras
 
-- Implementar ENUM para status  
-- Adicionar `updatedAt`  
-- Padronizar rotas (`/api/...`)  
-- Tratamento global de erros  
-- Refresh token  
-- Deploy (Render, Railway, etc.)  
+- Validação de dados (Joi ou Zod)
+- Paginação de pedidos
+- Atualização de status (além de cancelamento)
+- Logs estruturados
+- Rate limiting
+- Testes automatizados
 
 ---
 
 ## 📄 Licença
 
 MIT
+
+---
+
+## 👨‍💻 Autor: Thiago Martins
+
+Projeto desenvolvido com foco em aprendizado de arquitetura backend, autenticação segura e integração com frontend em ambiente real.
